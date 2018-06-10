@@ -15,14 +15,14 @@ This repository is to place on file notes on data structure and algorithm.
 >> the implementation mechanism of recursion
 >>
 >> use stack to eliminate recursion
-----------------recursion----------------
+```C
 unsigned int factorial(unsigned int n){
   if(n == 0)
     return 1;
   else
     return n*factorial(n-1);
 }
-----------------recursion----------------
+```
 >>
 
 ### Stack Application
