@@ -27,12 +27,12 @@ unsigned int factorial(unsigned int n){
 unsigned int factorialStack2(unsigned int n){
   Stack S;
   StackInit(S);
-  while(n>0){
+  while(n > 0){
     Push(S,n);
     n = n - 1;
   }
   n = 1;
-  while(StackLength(S)>0){
+  while(StackLength(S) > 0){
     n = n*Pop(S);
   }
   return n;
