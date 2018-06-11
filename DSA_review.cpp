@@ -1,6 +1,6 @@
 /******************************************************************
  ****************** Author:  atjohore@gmail.com  ******************
- ****************** Date:    2018-5-12           ******************
+ ****************** Date:    2018-2-12           ******************
  ******************************************************************/
 
 #include <iostream>
@@ -686,41 +686,309 @@ int Dequeue(CircularQueue PtrQ){
 }
 //3.3.0 队列的链式存储
 //链表表头做front删除，链表表尾做rear插入(链表表尾不能做删除操作)
-struct LinkedQueueNode{
+struct LinkedQueueNode{//链队列结点
     int data;
     struct LinkedQueueNode *next;
 };
+typedef struct LinkedQueueNode LQNode;
+typedef struct LinkedQueueNode *LinkedQNode;
 
-struct LinkedQueue{
-    struct LinkedQueueNode *rear;
-    struct LinkedQueueNode *front;
+struct QueueHEAD{//头、尾指针封装在一起的链队列
+    LQNode *front;
+    LQNode *rear;
 };
+typedef struct QueueHEAD LQueue;
+typedef struct QueueHEAD *LinkedQueue;
 
-typedef struct LinkedQueue* Queue;
-Queue PtrQ;
-
-//不带头结点的链式队列出队操作的示例
-int Dequeue(Queue PtrQ){
-    struct LinkedQueueNode *FrontCell;//链表头结点
-    int FrontElem;
-    
-    if(PtrQ->front == NULL){
-        cout << "The queue is empty" << endl;
-        exit(-1);
+//链式队列的初始化, 就是创建一个空队列
+void LinkedQueueInit(LinkedQueue Q){
+    LinkedQNode p = (LinkedQNode)malloc(sizeof(LQNode));
+    if(p==NULL){
+        cout << "头结点空间申请失败" << endl;
+        exit(0);
     }
-    FrontCell = PtrQ->front;
-    if(PtrQ->front == PtrQ->rear) /*若队列只有一个元素*/
-        PtrQ->front = PtrQ->rear = NULL; /*删除后队列置为空*/
+    else{
+        p->next = NULL;
+        Q->rear = p;
+        Q->front = p;
+    }
+}
+//链式队列的判空操作
+int LinkedQueueEmpty(LinkedQueue Q){
+    if(Q->front == Q->rear)
+        return 1;
     else
-        PtrQ->front = PtrQ->front->next;
-    FrontElem = FrontCell->data;
-    free(FrontCell);
-    return FrontElem;
+        return 0;
+}
+
+//链式队列的入队操作
+void EnLinkedQueue(LinkedQueue Q, int x){
+    LinkedQNode q = (LinkedQNode)malloc(sizeof(LQNode));
+    if(q == NULL){
+        cout << "空间申请失败！" << endl;
+        exit(0);
+    }
+    else{
+        q->data = x;
+        q->next = NULL;
+        Q->rear->next = q;
+        Q->rear = q;
+    }
+}
+//链式队列的出队操作
+int OutLinkedQueue(LinkedQueue Q){
+    int x;
+    if(Q->front == Q->rear){
+        cout << "the queue is empty" << endl;
+        exit(0);
+    }
+    LinkedQNode q = Q->front->next;
+    Q->front->next = q->next;
+    x = q->data;
+    free(q);
+    if(Q->front->next == NULL)
+        Q->rear = Q->front;
+    return x;
 }
 /*********************************************************************************************************/
 /*
  4. 串 String
- 5. KMP
+ //串的顺序存储结构
+ */
+# define STRSIZE = 256
+
+//串的动态存储结构 (堆存储结构，用malloc分配)
+//使用一组地址连续的存储单元存放串值字符序列，但存储空间是在程序执行过程中动态分配的
+//这种存储方式可以利用标准函数malloc和free动态地分配和释放存储空间，并且以一个特殊的字符('\0')作为字符串的结束标志。
+//在类型声明中str是串存放的起始地址，串的第i个字符存储在ch[i-1]中。length存储串的长，且最后一个字符的下标是length-1
+struct StringNode{
+    char *str;
+    int length;
+};
+typedef struct StringNode string;
+
+//串的赋值操作 将串T的值赋给串S
+void SeqStringAssign(StringNode *S,StringNode *T) {
+    if((S->str) != NULL)
+        free(S->str);
+    S->length = T->length;
+    if (S->length == 0) {//若T是空串
+        S->str = (char*) malloc(sizeof(char));
+        if(!S->str) {
+            printf("空间分配失败!");
+            exit(0);
+        }
+        //S->str = '/0';
+    }
+    else{//T不是空串
+        S->str = (char *)malloc((S->length + 1)*sizeof(char));
+        if(!S->str){
+            printf("空间分配失败!");
+            exit(0);
+        }
+        for(int i=0; i<S->length; i++)
+            S->str[i] = T->str[i];
+    }
+}
+//串赋值操作
+StringNode* SeqStringAssign(StringNode *S, char* V) {
+    if ((S->str) != NULL)
+        free(S->str);
+    S->length = sizeof(V) / sizeof(char);
+    S->str = (char*)malloc((S->length)*sizeof(char));
+    if (!S->str){
+        printf("overflow");
+        exit(0);
+    }
+    for (int i = 0; i < S->length; i++) {
+        S->str[i] = V[i];
+    }
+    return S;
+}
+//串连接操作
+void SeqStringContact(StringNode* S, StringNode* T){
+    StringNode temp;
+    temp.length = S->length + T->length;
+    temp.str = (char *)malloc((temp.length)*sizeof(char));
+    if(!temp.str){
+        cout << "空间分配失败！" << endl;
+        exit(0);
+    }
+    else{
+        for(int i = 0; i < S->length; i++){
+            temp.str[i] = S->str[i];
+        }
+        for(int i = 0; i < T->length; i++){
+            temp.str[S->length + i] = T->str[i];
+        }
+        free(temp.str);
+        S->str = temp.str;
+        S->length = temp.length;
+    }
+}
+//串判等操作
+int IsSeqStringEqual(StringNode *S, StringNode *T){
+    if(S->length != T->length)
+        return 0;
+    for(int i = 0; i < S->length; i++){
+        if(S->str[i] != T->str[i])
+            return 0;
+    }
+    return 1;
+}
+
+//求子串操作
+void SubSeqString(StringNode *S, StringNode *Sub, int start, int len){
+    if(1<=start && start<=S->length && start<=S->length-len+1){
+        Sub->str = (char *)malloc((len)*sizeof(char));
+        if(!Sub->str){
+            printf("空间分配失败!");
+            exit(0);
+        }
+        else{
+            Sub->length=len;
+            for (int i=0;i<len;i++) Sub->str[i]=S->str[start+i-1];
+        }
+    }
+    else {
+        printf("start与len的值不正确");
+        exit(0);
+    }
+}
+
+//5. 串的模式匹配
+//BF算法(Brute Force)
+/*
+ S = ababcdabbabababad  i
+ P =          abababa   j
+
+int SimpleMatching(StringNode S, StringNode P){
+    int i = 0;
+    while(i <= StringLength(S) - StringLength(P)){
+        int j = 0;
+        while(S[i] == P[j]){
+            i++;
+            j++;
+        }
+        if(j == StringLength(P))
+            return i-StringLength(P); //返回匹配的位置
+        i = i - j + 1；
+    }
+ return -1; //返回不匹配
+}
+T(n) = O((n-m+1)*m) = O(nm)
+*/
+//KMP算法
+/*
+ void findnext(StringNode P, int *next){
+    next[0] = -1;
+    j = 0;
+    k = -1;
+    while(j < Length(P)){
+        while(k == 0 || P[j] == P[k]){
+            j++;
+            k++;
+            next[j] = k;
+        }
+        k = next[k];
+    }
+}
+ 
+int KMP(StringNode S, StringNode P){
+    findnext(P, next);
+    i = j = 0;
+    while(i <= Length(S) - Length(P)){
+        while(j == -1 || < Length(P) && S[i]==P[j]){
+            i++;
+            j++;
+        }
+        if(j==Length(P))
+            return i - Length(P); //返回匹配的位置
+        j = next[j]; //在不匹配的情况下，i不变化
+    }
+ return -1;
+}
+
+*/
+/*********************************************************************************************************/
+/*
+ 6. 二叉树 Binary Tree
+ */
+typedef struct BinTreeNode{
+    int data;
+    struct BinTreeNode *lchild, *rchild;
+}BinTreeNode, *BinTree;
+//在n个结点的二叉链表中，有n+1个空指针域, 空指针域数目 = 2n0 + n1 = n0 + n1 + n2 + 1 = n + 1
+
+//二叉树的先序遍历(recursion)
+void PreOrderTraversal(BinTree bt){
+    if (bt!=NULL){ /* 如果bt为空，结束*/
+        printf("%c", bt->data); /*访问根结点*/
+        PreOrderTraversal( bt->lchild);/*先序遍历左子树*/
+        PreOrderTraversal (bt->rchild);
+    }
+}
+//二叉树的先序遍历(nonrecursion)
+/*
+ void PreOrderNoRec (BinTree BT) {
+    Stack S; BinTree p=BT->root;
+    while ((p != NULL) || !StackEmpty(S)) {
+        if (p != NULL){
+            printf("%c", p->data);//访问当前结点
+            Push(S,p);//将p压入栈S
+            p = p->lchild;//将p指向其左子树
+        }
+        else{
+            p = Top(S);
+            Pop(S); //从栈S弹出栈顶元素
+            p = p->rchild; //将p指向其右子树
+        }
+    }
+}
+*/
+
+//二叉树的中序遍历(recursion)
+void InOrderTraversal(BinTree bt){
+    if (bt!=NULL){ /* 如果bt为空，结束*/
+        InOrderTraversal(bt->lchild);/*先序遍历左子树*/
+        printf("%c", bt->data); /*访问根结点*/
+        InOrderTraversal(bt->rchild);
+    }
+}
+
+//二叉树的后序遍历(recursion)
+void PostOrderTraversal(BinTree bt){
+    if (bt!=NULL){ /* 如果bt为空，结束*/
+        PostOrderTraversal(bt->lchild);/*先序遍历左子树*/
+        PostOrderTraversal(bt->rchild);
+        printf("%c", bt->data);
+    }
+}
+//二叉树的层次遍历
+void LevelOrderTraverse(BinTree bt){
+    BinTreeNode Queue[MaxSize];
+    int front, rear;
+    if(bt == NULL)
+        return; //空二叉树，遍历结束
+    front = -1;
+    rear = 0;
+    Queue[rear] = *bt; //根结点入队列
+    while(rear != front){/*队列不空，继续遍历，否则，遍历结束*/
+        front ++;/*出队*/
+        cout << Queue[front].data << endl;/*访问刚出队的元素*/
+        if(Queue[front].lchild != NULL){//如果有左孩子，左孩子入队
+            rear++;
+            Queue[rear] = *Queue[front].lchild;
+        }
+        if(Queue[front].rchild != NULL){//如果有右孩子，右孩子入队
+            rear++;
+            Queue[rear] = *Queue[front].rchild;
+        }
+    }
+}
+//
+/*
+ 7. 矩阵 Matrix
  */
 /*********************************************************************************************************/
 /*
@@ -728,6 +996,49 @@ int Dequeue(Queue PtrQ){
  7. 矩阵 Matrix
  */
 /*********************************************************************************************************/
+//直接插入排序 StraightInsertionSort
+//单趟直接插入
+//arr是一个有序表，i为待插入的纪录，len为表长
+void StraightInsertion(int* arr, int i, int len){
+    arr[0] = i; //设置监视哨 //从右至左查找第一个比i小的数的位置
+    int pos = len;
+    while(i < arr[pos]){
+        arr[pos + 1] = arr[pos];
+        pos--;
+    }
+    arr[pos+1] = i;//将i插入到合适的位置
+}
+//arr是一个有序表，i为待插入的纪录，len为表长
+void StarightInsertionSort(int *arr,int len){
+    for(int i=2; i<len; i++){
+        StraightInsertion(arr,arr[i],i-1);
+    }
+}
+
+//希尔排序 ShellSort
+//单趟希尔排序
+int* Shell(int* arr, int h, int len){//h为增量
+    for(int i = 1; i < h; i++){
+        for(int j = 1; j < len; j +=h){
+            arr[0] = arr[j];
+            for(int m = j - h; m > 0; m -= h){
+                if(arr[0] > arr[m]){
+                    arr[m+h] = arr[m];
+                }
+            }
+        }
+    }
+    return arr;
+}
+
+int* ShellSort(int* arr, int*h, int hlen, int len){
+    int* temList = arr;
+    for(int i = hlen - 1; i >= 0; i--){
+        temList = Shell(temList, h[i], len);
+    }
+    return arr;
+}
+
 /*********************************************************************************************************/
 /*********************************************************************************************************/
 /*********************************************************************************************************/
