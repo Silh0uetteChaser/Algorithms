@@ -15,6 +15,19 @@ This repository is to place on file notes on data structure and algorithm.
 >> the implementation mechanism of recursion
 >>
 >> use stack to eliminate recursion
+
+### Queue Application
+> 排队问题
+>
+>> 解决主机与外部设备之间速度不匹配的问题(设置数据缓冲区)
+>>
+>> 解决由多用户引起的资源竞争问题(对提出占用CPU请求的进程按时间先后顺序排成队列)
+>>
+> 非排队问题
+>
+>> 使用链式队列打印杨辉三角形
+>>
+
 ```C
 //由于上一个算法会产生过多冗余的递归实例，从而导致计算速度过慢，需要采取一些优化
 
@@ -42,16 +55,4 @@ int fib_ascent_cal(int n){
     return g;
 }
 ```
->>
-
-### Queue Application
-> 排队问题
->
->> 解决主机与外部设备之间速度不匹配的问题(设置数据缓冲区)
->>
->> 解决由多用户引起的资源竞争问题(对提出占用CPU请求的进程按时间先后顺序排成队列)
->>
-> 非排队问题
->
->> 使用链式队列打印杨辉三角形
 >>
