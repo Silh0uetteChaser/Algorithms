@@ -16,26 +16,30 @@ This repository is to place on file notes on data structure and algorithm.
 >>
 >> use stack to eliminate recursion
 ```C
-//阶乘的递归算法
-unsigned int factorial(unsigned int n){
-  if(n == 0)
-    return 1;
-  else
-    return n*factorial(n-1);
-}
-//阶乘的非递归算法
-unsigned int factorialStack2(unsigned int n){
-  Stack S;
-  StackInit(S);
-  while(n > 0){
-    Push(S,n);
-    n = n - 1;
-  }
-  n = 1;
-  while(StackLength(S) > 0){
-    n = n*Pop(S);
-  }
-  return n;
+//由于上一个算法会产生过多冗余的递归实例，从而导致计算速度过慢，需要采取一些优化
+
+//Solution A(memoization)：将已计算过的结果制表备查，在程序入口处添加一个对表格的查询语句，只有在没有查询到结果的情况下，才会执行实质的计算。有效地克服刚才的缺点。
+//In computing, memoization or memoisation is an optimization technique used primarily to speed up computer programs by storing the results of expensive function calls and returning the cached result when the same inputs occur again
+
+//Solution B：Reverse the direction of calculation: from recursive descent to iterative ascent
+//颠倒计算方向：由自顶而下递归，为自底而上迭代
+/*            g---⧈
+                  ⎮
+             ⧈--g~f
+             ⎮
+             f~g--⧈
+                  ⎮
+             ⧈--g~f
+             ⎮
+             f
+用f和g分别记忆当前所处的相邻的两级台阶*/
+int fib_ascent_cal(int n){
+    int f = 0, g = 1; //fib(0), fib(1)
+    while (0 < n--){ //复杂度由n控制，与n成线性关系
+        g = g + f;
+        f = g - f;
+    }
+    return g;
 }
 ```
 >>
